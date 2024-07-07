@@ -1,0 +1,21 @@
+name: "reviews-and-ratings-project"
+version: "0.0.1"
+services:
+  db:
+    image: "postgres"
+    volumes:
+      - "../src/main/sql/create_schema.sql:/docker-entrypoint-initdb.d/create_schema.sql"
+      - "../src/main/sql/insert_data.sql:/docker-entrypoint-initdb.d/insert_data.sql"
+    container_name: "db"
+    ports:
+      - "9040:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    networks:
+      - "db-to-app"
+
+networks:
+  db-to-app:
+    driver: bridge
