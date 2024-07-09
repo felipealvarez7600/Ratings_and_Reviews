@@ -1,18 +1,17 @@
 
 CREATE TABLE Users (
     user_id SERIAL PRIMARY KEY,
-    username VARCHAR(50) NOT NULL UNIQUE,
-    email VARCHAR(100) NOT NULL UNIQUE,
+    username VARCHAR(15) NOT NULL UNIQUE CHECK (LENGTH(username) >= 2 AND LENGTH(username) <= 15),
+    email VARCHAR(100) NOT NULL UNIQUE CHECK (email LIKE '%@%'),
     password VARCHAR(100) NOT NULL,
     description VARCHAR(150),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE Tokens (
-    token_id SERIAL PRIMARY KEY,
+    token VARCHAR(100) PRIMARY KEY,
     user_id INT NOT NULL,
-    token VARCHAR(100) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_used_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES Users(user_id)
 );
 
@@ -21,18 +20,13 @@ CREATE TABLE Genres (
     genre_name VARCHAR(50) NOT NULL UNIQUE
 );
 
-CREATE TABLE MediaType (
-    type_id SERIAL PRIMARY KEY,
-    type_name VARCHAR(50) NOT NULL UNIQUE
-);
-
 CREATE TABLE Movies (
     movie_id SERIAL PRIMARY KEY,
     title VARCHAR(100) NOT NULL,
     description VARCHAR(150),
     release_date DATE,
-    type_id INT NOT NULL,
-    FOREIGN KEY (type_id) REFERENCES MediaType(type_id)
+    duration INT,
+    rating INT CHECK (rating >= 0 AND rating <= 10)
 );
 
 CREATE TABLE MovieGenres (
@@ -47,14 +41,14 @@ CREATE TABLE Shows (
     show_id SERIAL PRIMARY KEY,
     title VARCHAR(100) NOT NULL,
     description VARCHAR(150),
-    type_id INT NOT NULL,
-    FOREIGN KEY (type_id) REFERENCES MediaType(type_id)
+    rating INT CHECK (rating >= 0 AND rating <= 10)
 );
 
 CREATE TABLE Seasons (
     season_id SERIAL PRIMARY KEY,
     show_id INT NOT NULL,
     season_number INT NOT NULL,
+    rating INT CHECK (rating >= 0 AND rating <= 10),
     FOREIGN KEY (show_id) REFERENCES Shows(show_id)
 );
 
@@ -66,6 +60,7 @@ CREATE TABLE Episodes (
     description VARCHAR(150),
     release_date DATE,
     duration INT,
+    rating INT CHECK (rating >= 0 AND rating <= 10),
     FOREIGN KEY (season_id) REFERENCES Seasons(season_id)
 );
 
@@ -82,8 +77,7 @@ CREATE TABLE Games (
     title VARCHAR(100) NOT NULL,
     description VARCHAR(150),
     release_date DATE,
-    type_id INT NOT NULL,
-    FOREIGN KEY (type_id) REFERENCES MediaType(type_id)
+    rating INT CHECK (rating >= 0 AND rating <= 10)
 );
 
 CREATE TABLE GameGenres (
@@ -97,6 +91,7 @@ CREATE TABLE GameGenres (
 CREATE TABLE MovieReviews (
     user_id INT NOT NULL,
     movie_id INT NOT NULL,
+    external_rating INT NOT NULL CHECK (external_rating >= 0 AND external_rating <= 100),
     rating INT NOT NULL CHECK (rating >= 0 AND rating <= 10),
     review TEXT,
     PRIMARY KEY (user_id, movie_id),
@@ -107,6 +102,7 @@ CREATE TABLE MovieReviews (
 CREATE TABLE ShowReviews (
     user_id INT NOT NULL,
     show_id INT NOT NULL,
+    external_rating INT NOT NULL CHECK (external_rating >= 0 AND external_rating <= 100),
     rating INT NOT NULL CHECK (rating >= 0 AND rating <= 10),
     review TEXT,
     PRIMARY KEY (user_id, show_id),
@@ -114,9 +110,21 @@ CREATE TABLE ShowReviews (
     FOREIGN KEY (show_id) REFERENCES Shows(show_id)
 );
 
+CREATE TABLE EpisodeReviews (
+    user_id INT NOT NULL,
+    episode_id INT NOT NULL,
+    external_rating INT NOT NULL CHECK (external_rating >= 0 AND external_rating <= 100),
+    rating INT NOT NULL CHECK (rating >= 0 AND rating <= 10),
+    review TEXT,
+    PRIMARY KEY (user_id, episode_id),
+    FOREIGN KEY (user_id) REFERENCES Users(user_id),
+    FOREIGN KEY (episode_id) REFERENCES Episodes(episode_id)
+);
+
 CREATE TABLE GameReviews (
     user_id INT NOT NULL,
     game_id INT NOT NULL,
+    external_rating INT NOT NULL CHECK (external_rating >= 0 AND external_rating <= 100),
     rating INT NOT NULL CHECK (rating >= 0 AND rating <= 10),
     review TEXT,
     PRIMARY KEY (user_id, game_id),
