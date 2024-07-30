@@ -2,9 +2,6 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm") version "1.9.23"
-    id("org.springframework.boot") version "3.1.4"
-    id("io.spring.dependency-management") version "1.1.3"
-    kotlin("plugin.spring") version "1.8.22"
 }
 
 group = "org.example"
@@ -27,14 +24,6 @@ dependencies {
     implementation("org.json:json:20230227")
 
     implementation ("com.squareup.okhttp3:okhttp:4.9.1")
-
-    // To get password encode
-    implementation("org.springframework.security:spring-security-core:6.3.0")
-
-    implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.springframework.boot:spring-boot-starter-webflux")
 
 }
 
