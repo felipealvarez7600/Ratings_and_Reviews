@@ -1,4 +1,4 @@
-package project.storage.repositories
+package project.repositories
 
 import project.domain.movies.Movie
 

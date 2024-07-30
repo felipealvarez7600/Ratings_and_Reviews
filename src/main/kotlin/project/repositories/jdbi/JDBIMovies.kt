@@ -1,8 +1,8 @@
-package project.storage.db_access
+package project.repositories.jdbi
 
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
-import project.storage.repositories.MovieRepository
+import project.repositories.MovieRepository
 import project.domain.movies.Movie
 
 
