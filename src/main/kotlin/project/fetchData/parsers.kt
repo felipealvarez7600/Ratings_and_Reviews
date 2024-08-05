@@ -14,7 +14,7 @@ fun movieByIdParser(jsonObject: JSONObject): Movie {
     val imdbId = jsonObject.getString("imdb_id")
     val video = jsonObject.getBoolean("video")
     val title = jsonObject.getString("title")
-    val backdropPath = jsonObject.getString("backdrop_path")
+    val backdropPath = jsonObject.optString("backdrop_path")
     val revenue = jsonObject.getLong("revenue")
     val genres = jsonObject.getJSONArray("genres").map { genreParser(it as JSONObject) }
     val popularity = jsonObject.getDouble("popularity")
@@ -25,7 +25,7 @@ fun movieByIdParser(jsonObject: JSONObject): Movie {
     val overview = jsonObject.getString("overview")
     val originalTitle = jsonObject.getString("original_title")
     val runtime = jsonObject.getInt("runtime")
-    val posterPath = jsonObject.getString("poster_path")
+    val posterPath = jsonObject.optString("poster_path")
     val spokenLanguages = jsonObject.getJSONArray("spoken_languages").map { spokenLanguageParser(it as JSONObject) }
     val productionCompanies = jsonObject.getJSONArray("production_companies").map { productionCompanyParser(it as JSONObject) }
     val releaseDate = jsonObject.getString("release_date")
@@ -170,4 +170,23 @@ fun seasonParser(jsonObject: JSONObject): Season {
     val seasonNumber = jsonObject.getInt("season_number")
     val voteAverage = jsonObject.getDouble("vote_average")
     return Season(airDate, episodeCount, id, name, overview, posterPath, seasonNumber, voteAverage)
+}
+
+fun tvShowByTittleParser(jsonObject: JSONObject): TVShowTitle {
+    val adult = jsonObject.getBoolean("adult")
+    val backdropPath = jsonObject["backdrop_path"] as? String ?: ""
+    val genreIds = jsonObject.getJSONArray("genre_ids").map { it as Int }
+    val id = jsonObject.getInt("id")
+    val originCountries = jsonObject.getJSONArray("origin_country").map { it as String }
+    val originalLanguage = jsonObject.getString("original_language")
+    val originalName = jsonObject.getString("original_name")
+    val overview = jsonObject.getString("overview")
+    val popularity = jsonObject.getDouble("popularity")
+    val posterPath = jsonObject["poster_path"] as? String ?: ""
+    val firstAirDate = jsonObject.getString("first_air_date")
+    val name = jsonObject.getString("name")
+    val voteAverage = jsonObject.getDouble("vote_average")
+    val voteCount = jsonObject.getInt("vote_count")
+    return TVShowTitle(adult, backdropPath, genreIds, id, originCountries, originalLanguage,
+        originalName, overview, popularity, posterPath, firstAirDate, name, voteAverage, voteCount)
 }
