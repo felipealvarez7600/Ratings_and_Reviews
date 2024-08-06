@@ -1,5 +1,5 @@
 package project.domain.users
 
-data class HashPassword(
+data class Password(
     val hashedPassword: String,
 )

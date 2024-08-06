@@ -4,6 +4,10 @@ package project.repositories
  * Interface Transaction used to assist in the transactions.
  */
 interface Transaction {
+
+    //Users repository.
+    val usersRepository: UserRepository
+
     //Movies repository.
     val moviesRepository: MovieRepository
     //Miscellaneous repository.
