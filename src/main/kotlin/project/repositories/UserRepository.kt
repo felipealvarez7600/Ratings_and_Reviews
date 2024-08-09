@@ -10,6 +10,7 @@ interface UserRepository {
     fun getUserByEmail(email: String): User?
     fun getUserById(id: Int): User?
     fun getUserByToken(token: String): User?
+    fun getTokenByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): Token?
     fun updateUser(user: User): Int
     fun deleteUser(id: Int): Int
     fun createToken(token: Token) : Int

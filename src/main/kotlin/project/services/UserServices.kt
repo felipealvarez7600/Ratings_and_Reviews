@@ -26,12 +26,12 @@ sealed class UserError {
     data object UserNotFound: UserError()
     //Object representing the error when the user is not created with success.
     data object UserNotCreated: UserError()
-    //Object representing the error when the user is not added correctly to the database.
-    data object UserNotAddedToRank: UserError()
 }
 
 //Type-Alias of the result of the creation of the user in this case using the object "Either" with the failure on the left "UserError" and success being an Int in this case the id of the user.
 typealias UserResult = Either<UserError, Int>
+
+typealias UserSearchResult = Either<UserError, User>
 
 /**
  * Sealed class "TokenCreationError" representing all the possible errors that can happen when creating a new token.
@@ -58,6 +58,9 @@ typealias TokenResult = Either<TokenError, TokenExternalInfo>
 
 //Type-alias of the result of the search of the token in this case using the object "Either" with the failure on the left "TokenError" and success being the "User".
 typealias TokenUserResult = Either<TokenError, User>
+
+//Type-alias of the result of the revoke of the token in this case using the object "Either" with the failure on the left "TokenError" and success being the "Boolean".
+typealias TokenRevokeResult = Either<TokenError, Boolean>
 
 @Component
 class UserService (private val transactionManager: TransactionManager,
@@ -149,27 +152,54 @@ class UserService (private val transactionManager: TransactionManager,
         if (!usersDomain.canBeToken(token)) {
             return failure(TokenError.TokenInvalid)
         }
-        TODO()
-//        //Transaction to make to the database.
-//        return transactionManager.run(null) {
-//            //Value representing the usersRepository.
-//            val usersRepository = it.usersRepository
-//            //Value to create for the user a token valid for that token.
-//            val tokenValidationInfo = usersDomain.createTokenValidationInformation(token)
-//            //Value that will get the user and the token in a pair with the information.
-//            val userAndToken = usersRepository.getUserByToken(tokenValidationInfo.validationInfo)
-//            //Verification of the information in user and token and if they are valid we return success if not we send a failure information.
-//            if (userAndToken != null && usersDomain.isTokenTimeValid(clock, Token())) {
-//                //Update in the database of the token last time used.
-//                val updateUser = usersRepository.updateTokenLastUsed(userAndToken.second, clock.now())
-//                //Verification if the token was updated.
-//                if(updateUser != 1) return@run failure(TokenError.TokenNotUpdated)
-//                //Return of user with the token we searched.
-//                success(userAndToken.first)
-//            } else {
-//                //Return of a error message if an error occurred.
-//                failure(TokenError.TokenOrUserNotValid)
-//            }
-//        }
+        //Transaction to make to the database.
+        return transactionManager.run(null) {
+            //Value representing the usersRepository.
+            val usersRepository = it.usersRepository
+            //Value to create for the user a token valid for that token.
+            val tokenValidationInfo = usersDomain.createTokenValidationInformation(token)
+            //Value that will get the user and the token in a pair with the information.
+            val user = usersRepository.getUserByToken(token)
+            val completeToken = usersRepository.getTokenByTokenValidationInfo(tokenValidationInfo)
+            //Verification of the information in user and token and if they are valid we return success if not we send a failure information.
+            if (user != null && completeToken != null && usersDomain.isTokenTimeValid(clock, completeToken)) {
+                //Update in the database of the token last time used.
+                val updateUser = usersRepository.updateTokenLastUsed(completeToken, clock.now())
+                //Verification if the token was updated.
+                if(updateUser != 1) return@run failure(TokenError.TokenNotUpdated)
+                //Return of user with the token we searched.
+                success(user)
+            } else {
+                //Return of a error message if an error occurred.
+                failure(TokenError.TokenOrUserNotValid)
+            }
+        }
+    }
+
+    fun getUserById(id: Int): UserSearchResult {
+        return transactionManager.run(null) {
+            val user = it.usersRepository.getUserById(id)
+            if (user != null) {
+                success(user)
+            } else {
+                failure(UserError.UserNotFound)
+            }
+        }
+    }
+
+    fun removeToken(token: String): TokenRevokeResult {
+        //Value that will represent the information saved in the database of that token, so we will encrypt the token again to search for it.
+        val tokenValidationInfo = usersDomain.createTokenValidationInformation(token)
+        //Return of the transaction made to the database.
+        return transactionManager.run(null) {
+            //Verification if the token exists.
+            if(it.usersRepository.getTokenByTokenValidationInfo(tokenValidationInfo) == null) return@run failure(TokenError.TokenNotFound)
+            //Removing the token from the database.
+            val res = it.usersRepository.removeTokenByValidationInfo(tokenValidationInfo)
+            //Verification if the token was removed.
+            if(res != 1) return@run failure(TokenError.TokenNotRemoved)
+            //Return true of the result of the remove of the value on the database.
+            success(true)
+        }
     }
 }

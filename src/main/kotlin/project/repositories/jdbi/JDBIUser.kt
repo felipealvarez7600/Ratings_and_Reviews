@@ -66,6 +66,19 @@ class JDBIUser (private val handle: Handle) : UserRepository {
             .singleOrNull()
     }
 
+    override fun getTokenByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): Token? {
+        return handle.createQuery(
+            """
+            SELECT user_id, token, created_at, last_used_at
+            FROM tokens
+            WHERE token = :token
+            """
+        )
+            .bind("token", tokenValidationInfo.validationInfo)
+            .mapTo<Token>()
+            .singleOrNull()
+    }
+
     override fun updateUser(user: User): Int {
         return handle.createUpdate(
             """
